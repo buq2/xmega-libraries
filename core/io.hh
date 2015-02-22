@@ -5,7 +5,7 @@
 
 namespace axlib {
 
-typedef enum Port
+typedef enum Port_t
 {
     PORT_A,
     PORT_B,
@@ -13,13 +13,13 @@ typedef enum Port
     PORT_D,
     PORT_E,
     PORT_R
-};
+} Port;
 
-PORT_t &GetPort(const Port port);
-SPI_t &GetSpiPort(const Port port);
-TC0_t &GetTimerCounter0(const Port port);
-TC1_t &GetTimerCounter1(const Port port);
-TC2_t &GetTimerCounter2(const Port port);
+PORT_t *GetPort(const Port port);
+SPI_t *GetSpiPort(const Port port);
+TC0_t *GetTimerCounter0(const Port port);
+TC1_t *GetTimerCounter1(const Port port);
+TC2_t *GetTimerCounter2(const Port port);
 
 } //namespace axlib
 

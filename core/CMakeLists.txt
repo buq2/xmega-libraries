@@ -1,2 +1,4 @@
-ADD_LIBRARY(xCore
-    io.hh io.cpp)
+ADD_LIBRARY(axCore
+    core.hh
+    io.hh io.cpp
+    pwm.hh pwm.cpp)
