@@ -1,7 +1,7 @@
 #ifndef AXLIB_CORE_PWM_HH
 #define AXLIB_CORE_PWM_HH
 
-#include "core/io.hh"
+#include "axlib/core/io.hh"
 #include <avr/io.h>
 
 namespace axlib {

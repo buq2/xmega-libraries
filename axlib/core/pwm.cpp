@@ -1,4 +1,4 @@
-#include "core/pwm.hh"
+#include "axlib/core/pwm.hh"
 
 using namespace axlib;
 
@@ -16,8 +16,8 @@ PwmSimple::PwmSimple(const Port pwm_port, const uint8_t pwm_pin)
         tc0_->CTRLB |= 0x03; //single slope
         tc0_->CTRLB |= 0b10000; //channel select CCAEN
     } else {
-        tc1_->CTRLB | 0x03; //single slope
-        tc0_->CTRLB |= 0b10000; //channel select CCAEN
+        tc1_->CTRLB |= 0x03; //single slope
+        tc1_->CTRLB |= 0b10000; //channel select CCAEN
     }
 }
 
@@ -77,6 +77,6 @@ void PwmSimple::SetCcBuffer(const uint16_t buffer)
     if (pwm_pin_ <= 0b00001111) {
         tc0_->CCABUF = buffer;
     } else {
-        tc0_->CCABUF = buffer;
+        tc1_->CCABUF = buffer;
     }
 }
