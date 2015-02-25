@@ -4,7 +4,6 @@
 
 using namespace axlib;
 
-#define I2C_PORT TWIC
 #define I2C_SPEED 400000
 #define I2C_TIMEOUT 20
 #define MS5805_ADDRESS_READ 0b11101101
@@ -12,9 +11,10 @@ using namespace axlib;
 
 #define RETURN_ERROR_IF_ERROR(x) {if (x) {return x;}}
 
-AltimeterMS5805_02BA01::AltimeterMS5805_02BA01()
+AltimeterMS5805_02BA01::AltimeterMS5805_02BA01(const axlib::Port i2c_port)
     :
-      ratio_(OversampleRatio8192)
+      ratio_(OversampleRatio8192),
+      i2c_port_(GetI2CPort(i2c_port))
 {
 
 }
@@ -22,12 +22,12 @@ AltimeterMS5805_02BA01::AltimeterMS5805_02BA01()
 uint8_t AltimeterMS5805_02BA01::Setup()
 {
     // Initialize the TWI driver
-    TWI_Init(&I2C_PORT, TWI_BAUD_FROM_FREQ(I2C_SPEED));
+    TWI_Init(i2c_port_, TWI_BAUD_FROM_FREQ(I2C_SPEED));
 
     // 0) Reset device
     uint8_t address = 0x1E;
     uint8_t packet = 0;
-    uint8_t err = TWI_WritePacket(&I2C_PORT, MS5805_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
+    uint8_t err = TWI_WritePacket(i2c_port_, MS5805_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
                                   &packet, 1);
     RETURN_ERROR_IF_ERROR(err);
 
@@ -127,7 +127,7 @@ void AltimeterMS5805_02BA01::GetStr(char *str)
 uint8_t AltimeterMS5805_02BA01::ReadCoefficient(const uint8_t coefnum, uint16_t *coef)
 {
     uint8_t address = 0xA0 + coefnum*2;
-    uint8_t err = TWI_ReadPacket(&I2C_PORT, MS5805_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
+    uint8_t err = TWI_ReadPacket(i2c_port_, MS5805_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
                                   (uint8_t*)coef, 2);
 
     uint16_t tmp1 = *(((uint8_t*)coef)+0);
@@ -150,7 +150,7 @@ uint8_t AltimeterMS5805_02BA01::ReadMeasurement(const AltimeterMS5805_02BA01::Ra
     address += ((uint8_t)ratio)*2;
 
     // Initiate conversion
-    uint8_t err = TWI_ReadPacket(&I2C_PORT, MS5805_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
+    uint8_t err = TWI_ReadPacket(i2c_port_, MS5805_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
                                   (uint8_t*)value, 0);
 
     // We must sleep appropriate time, otherwise reading will fail
@@ -177,7 +177,7 @@ uint8_t AltimeterMS5805_02BA01::ReadMeasurement(const AltimeterMS5805_02BA01::Ra
 
     // Get value
     address = 0;
-    err = TWI_ReadPacket(&I2C_PORT, MS5805_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
+    err = TWI_ReadPacket(i2c_port_, MS5805_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
                                   (uint8_t*)value, 3);
     uint32_t tmp1 = *(((uint8_t*)value)+0);
     uint32_t tmp2 = *(((uint8_t*)value)+1);

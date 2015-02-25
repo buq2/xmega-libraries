@@ -4,7 +4,6 @@
 
 using namespace axlib;
 
-#define I2C_PORT TWIC
 #define I2C_SPEED 400000
 #define I2C_TIMEOUT 20
 #define MPL3115A2_ADDRESS_READ 0xC1 // 1100 0001
@@ -13,11 +12,12 @@ using namespace axlib;
 #define RETURN_ERROR_IF_ERROR(x) {if (x) {return x;}}
 #define RETURN_NULL_IF_ERROR(x) {if (x) {return NULL;}}
 
-AltimeterMPl3114A2::AltimeterMPl3114A2()
+AltimeterMPl3114A2::AltimeterMPl3114A2(const Port i2c_port)
     :
       request_data_called_(false),
       configuration_data_(0b10000000),
-      altitude_ground_(0.0f)
+      altitude_ground_(0.0f),
+      i2c_port_(GetI2CPort(i2c_port))
 {
 }
 
@@ -61,18 +61,18 @@ void AltimeterMPl3114A2::SetOversampleRate(const AltimeterMPl3114A2::OversampleR
 uint8_t AltimeterMPl3114A2::Setup()
 {
     // Initialize the TWI driver
-    TWI_Init(&I2C_PORT, TWI_BAUD_FROM_FREQ(I2C_SPEED));
+    TWI_Init(i2c_port_, TWI_BAUD_FROM_FREQ(I2C_SPEED));
 
     uint8_t address = 0x26;
     uint8_t packet = configuration_data_;
-    uint8_t err = TWI_WritePacket(&I2C_PORT, MPL3115A2_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
+    uint8_t err = TWI_WritePacket(i2c_port_, MPL3115A2_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
                                   &packet, 1);
     RETURN_ERROR_IF_ERROR(err);
 
     // Enable "data ready" flags
     address = 0x13;
     packet = 0x07;
-    err = TWI_WritePacket(&I2C_PORT, MPL3115A2_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
+    err = TWI_WritePacket(i2c_port_, MPL3115A2_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
                           &packet, 1);
     RETURN_ERROR_IF_ERROR(err);
 
@@ -100,7 +100,7 @@ uint8_t AltimeterMPl3114A2::RequestDataUpdate()
     packet = BIT_SET(packet, 1); // Immediate update
     packet = BIT_CLEAR(packet, 0); // Auto clear immediat update bit
     uint8_t address = 0x26;
-    uint8_t err = TWI_WritePacket(&I2C_PORT, MPL3115A2_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
+    uint8_t err = TWI_WritePacket(i2c_port_, MPL3115A2_ADDRESS_WRITE, I2C_TIMEOUT, &address, 1,
                                   &packet, 1);
     RETURN_ERROR_IF_ERROR(err);
     request_data_called_ = true;
@@ -113,7 +113,7 @@ uint8_t AltimeterMPl3114A2::DataReady()
     // Check status register
     uint8_t address = 0;
     uint8_t packet = 0;
-    uint8_t err = TWI_ReadPacket(&I2C_PORT, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
+    uint8_t err = TWI_ReadPacket(i2c_port_, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
                     &packet, 1);
     RETURN_ERROR_IF_ERROR(err);
 
@@ -141,13 +141,13 @@ uint8_t AltimeterMPl3114A2::GetTemperature(float *temperature)
     uint8_t OUT_T_MSB;
     uint8_t OUT_T_LSB;
     uint8_t address = 0x04;
-    uint8_t err = TWI_ReadPacket(&I2C_PORT, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
+    uint8_t err = TWI_ReadPacket(i2c_port_, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
                          &OUT_T_MSB, 1);
     RETURN_ERROR_IF_ERROR(err);
     request_data_called_ = false; //MSB read -> need to make another request
 
     address = 0x05;
-    err = TWI_ReadPacket(&I2C_PORT, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
+    err = TWI_ReadPacket(i2c_port_, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
                          &OUT_T_LSB, 1);
     RETURN_ERROR_IF_ERROR(err);
 
@@ -165,18 +165,18 @@ uint8_t AltimeterMPl3114A2::GetPressurePascals(float *pressure)
     uint8_t OUT_P_CSB;
     uint8_t OUT_P_LSB;
     uint8_t address = 0x01;
-    uint8_t err = TWI_ReadPacket(&I2C_PORT, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
+    uint8_t err = TWI_ReadPacket(i2c_port_, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
                                  &OUT_P_MSB, 1);
     RETURN_ERROR_IF_ERROR(err);
     request_data_called_ = false; //MSB read -> need to make another request
 
     address = 0x02;
-    err = TWI_ReadPacket(&I2C_PORT, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
+    err = TWI_ReadPacket(i2c_port_, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
                                      &OUT_P_CSB, 1);
     RETURN_ERROR_IF_ERROR(err);
 
     address = 0x03;
-    err = TWI_ReadPacket(&I2C_PORT, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
+    err = TWI_ReadPacket(i2c_port_, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
                                      &OUT_P_LSB, 1);
     RETURN_ERROR_IF_ERROR(err);
 
@@ -226,18 +226,18 @@ uint8_t AltimeterMPl3114A2::GetRawAltitudeMeters(float *altitude)
     uint8_t OUT_P_CSB;
     uint8_t OUT_P_LSB;
     uint8_t address = 0x01;
-    uint8_t err = TWI_ReadPacket(&I2C_PORT, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
+    uint8_t err = TWI_ReadPacket(i2c_port_, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
                                  &OUT_P_MSB, 1);
     RETURN_ERROR_IF_ERROR(err);
     request_data_called_ = false; //MSB read -> need to make another request
 
     address = 0x02;
-    err = TWI_ReadPacket(&I2C_PORT, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
+    err = TWI_ReadPacket(i2c_port_, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
                                      &OUT_P_CSB, 1);
     RETURN_ERROR_IF_ERROR(err);
 
     address = 0x03;
-    err = TWI_ReadPacket(&I2C_PORT, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
+    err = TWI_ReadPacket(i2c_port_, MPL3115A2_ADDRESS_READ, I2C_TIMEOUT, &address, 1,
                                      &OUT_P_LSB, 1);
     RETURN_ERROR_IF_ERROR(err);
 

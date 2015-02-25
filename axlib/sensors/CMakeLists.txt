@@ -6,4 +6,6 @@ ADD_LIBRARY(axSensors
     )
 
 TARGET_LINK_LIBRARIES(axSensors
-    lufa)
+    lufa
+    axCore
+    )

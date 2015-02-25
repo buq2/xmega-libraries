@@ -75,4 +75,17 @@ TC2_t *GetTimerCounter2(const Port port)
     return 0;
 }
 
+TWI_t *GetI2CPort(const Port port)
+{
+    switch(port)  {
+    case PORT_C:
+        return &TWIC;
+    case PORT_E:
+        return &TWIE;
+    default:
+        return 0;
+    }
+    return 0;
+}
+
 } //namespace axlib

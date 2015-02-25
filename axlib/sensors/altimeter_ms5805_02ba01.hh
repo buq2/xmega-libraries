@@ -1,6 +1,7 @@
 #ifndef ALTIMETER_MS5805_02BA01_HH
 #define ALTIMETER_MS5805_02BA01_HH
 
+#include "axlib/core/io.hh"
 #include <stdint.h>
 
 namespace axlib {
@@ -8,7 +9,7 @@ namespace axlib {
 class AltimeterMS5805_02BA01
 {
  public:
-    AltimeterMS5805_02BA01();
+    AltimeterMS5805_02BA01(const Port i2c_port);
     uint8_t Setup();
 
     uint8_t GetAltitudeMeters(float *altitude);
@@ -38,6 +39,7 @@ class AltimeterMS5805_02BA01
  private:
     uint16_t coefficients_[8];
     OversampleRatio ratio_;
+    TWI_t *i2c_port_;
 }; //class AltimeterMS5805_02BA01
 
 } //namespace axlib

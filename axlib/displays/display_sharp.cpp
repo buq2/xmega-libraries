@@ -8,17 +8,24 @@ using namespace axlib;
 #define SPI_SS_PIN 0b00010000
 #define SPI_MOSI_PIN 0b00100000
 #define SPI_SCK_PIN 0b10000000
-#define EXTCOMIN_PIN 0b00000100
-#define SPI_PORT PORTC
-#define SPI_VAR SPIC
-#define EXCOMIN_PORT PORTB
-#define CS_PORT PORTD
-#define CS_PIN 0b00000100;
 
-DisplaySharp::DisplaySharp(const uint8_t width, const uint8_t height)
+DisplaySharp::DisplaySharp(const uint8_t width, const uint8_t height,
+                           const Port spi_port,
+                           const Port cs_port, const uint8_t cs_pin,
+                           const Port excomin_port, const uint8_t excomin_pin,
+                           const Port display_on_port, const uint8_t display_on_pin)
     :
       width_(width),
-      height_(height)
+      height_(height),
+      spi_port_(GetPort(spi_port)),
+      spi_(GetSpiPort(spi_port)),
+      cs_port_(GetPort(cs_port)),
+      cs_pin_(cs_pin),
+      excomin_port_(GetPort(excomin_port)),
+      excomin_pin_(excomin_pin),
+      display_on_port_(GetPort(display_on_port)),
+      display_on_pin_(display_on_pin),
+      vbit_(false)
 {
 
 }
@@ -26,24 +33,29 @@ DisplaySharp::DisplaySharp(const uint8_t width, const uint8_t height)
 bool DisplaySharp::Setup()
 {
     // Setup SPI pins
-    SPI_PORT.DIRSET  = SPI_MOSI_PIN | SPI_SCK_PIN | SPI_SS_PIN;
-    SPI_PORT.PIN4CTRL = PORT_OPC_WIREDANDPULL_gc;
+    spi_port_->DIRSET  = SPI_MOSI_PIN | SPI_SCK_PIN | SPI_SS_PIN;
+    spi_port_->PIN4CTRL = PORT_OPC_WIREDANDPULL_gc;
 
     SetChipSelected(0);
 
     // Set the actual CS pin (which is not in the SPI port)
-    CS_PORT.DIRSET = CS_PIN;
-    CS_PORT.OUTCLR = CS_PIN;
+    cs_port_->DIRSET = cs_pin_;
+    cs_port_->OUTCLR = cs_pin_;
+
+    // And disp on pin
+    display_on_port_->DIRSET = display_on_pin_;
 
     // Setup SPI
     // It seems that even SPI_SPEED_FCPU_DIV_4  could be usable
-    SPI_Init(&SPI_VAR,
+    SPI_Init(spi_,
              SPI_SPEED_FCPU_DIV_128  | SPI_ORDER_MSB_FIRST | SPI_SCK_LEAD_RISING |
-            SPI_SAMPLE_TRAILING | SPI_MODE_MASTER);
+             SPI_SAMPLE_TRAILING | SPI_MODE_MASTER);
 
     // Setup VCOM signal
-    EXCOMIN_PORT.DIRSET = EXTCOMIN_PIN;
-    EXCOMIN_PORT.OUTCLR = EXTCOMIN_PIN;
+    if (NULL != excomin_port_) {
+        excomin_port_->DIRSET = excomin_pin_;
+        excomin_port_->OUTCLR = excomin_pin_;
+    }
 
     return 0;
 }
@@ -57,7 +69,7 @@ void DisplaySharp::SetContent(const DisplayBuffer &buffer)
     SetChipSelected(1);
     _delay_us(6);
 
-    SendByte(0b10000000); //Write line command
+    SendByte(0b10000000 | GetVbyte()); //Write line command
     for (uint8_t y = 0; y < height_; ++y) {
         const uint8_t *data = buffer.GetBufferRow(y);
 
@@ -81,12 +93,20 @@ void DisplaySharp::SetContent(const DisplayBuffer &buffer)
 void DisplaySharp::ToggleExtcomin()
 {
     static uint8_t comstatus = 0;
-    if (comstatus == 0) {
-        EXCOMIN_PORT.OUTSET = EXTCOMIN_PIN;
-        comstatus = 1;
+    if (!vbit_) {
+        vbit_ = true;
+        if (NULL != excomin_port_) {
+            excomin_port_->OUTSET = excomin_pin_;
+        } else {
+            //zSendVbyte();
+        }
     } else {
-        EXCOMIN_PORT.OUTCLR = EXTCOMIN_PIN;
-        comstatus = 0;
+        vbit_ = false;
+        if (NULL != excomin_port_) {
+            excomin_port_->OUTCLR = excomin_pin_;
+        } else {
+            SendVbyte();
+        }
     }
 }
 
@@ -95,23 +115,49 @@ void DisplaySharp::Clear()
     SetChipSelected(1);
     _delay_us(6);
 
-    SendByte(0b00000100);
+    SendByte(0b00000100 | GetVbyte());
     SendByte(0);
 
     _delay_us(2);
     SetChipSelected(0);
 }
 
+void DisplaySharp::SetDisplayOn(const bool display_on)
+{
+    // Implement
+    if (NULL != display_on_port_) {
+        if (display_on) {
+            display_on_port_->OUTSET = display_on_pin_;
+        } else {
+            display_on_port_->OUTCLR = display_on_pin_;
+        }
+    }
+}
+
 void DisplaySharp::SetChipSelected(const uint8_t val)
 {
     if (val == 0) {
-        CS_PORT.OUTCLR = CS_PIN;
+        cs_port_->OUTCLR = cs_pin_;
     } else {
-        CS_PORT.OUTSET = CS_PIN;
+        cs_port_->OUTSET = cs_pin_;
     }
 }
 
 void DisplaySharp::SendByte(const uint8_t val)
 {
-    SPI_SendByte(&SPI_VAR, val);
+    SPI_SendByte(spi_, val);
+}
+
+uint8_t DisplaySharp::GetVbyte()
+{
+    // format 0x0V000000
+    return vbit_ << 6;
+}
+
+void DisplaySharp::SendVbyte()
+{
+    SetChipSelected(true);
+    SendByte(GetVbyte());
+    SendByte(0); // Padding
+    SetChipSelected(false);
 }

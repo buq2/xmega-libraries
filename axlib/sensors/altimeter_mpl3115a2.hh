@@ -2,13 +2,14 @@
 #define ALTIMETER_MPL3114A2
 
 #include <stdint.h>
+#include "axlib/core/io.hh"
 
 namespace axlib {
 
 class AltimeterMPl3114A2
 {
  public:
-    AltimeterMPl3114A2();
+    AltimeterMPl3114A2(const Port i2c_port);
 
     typedef enum {
         OversampleRate1,
@@ -64,6 +65,7 @@ class AltimeterMPl3114A2
     float previous_raw_altitude_;
     float previous_pressure_;
     float previous_temperature_;
+    TWI_t *i2c_port_;
 }; //class AltimeterMPl3114A2
 
 } //namespace axlib

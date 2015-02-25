@@ -12,3 +12,7 @@ ENDIF()
 ADD_LIBRARY(axDisplays
     ${DISPLAY_FILES}
     )
+
+TARGET_LINK_LIBRARIES(axDisplays
+    axCore
+    )
