@@ -1,5 +1,5 @@
-#include "control/pid_controller.hh"
-#include "core/core.hh"
+#include "axlib/control/pid_controller.hh"
+#include "axlib/core/core.hh"
 
 namespace axlib {
 

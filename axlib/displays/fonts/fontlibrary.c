@@ -4,7 +4,7 @@
 // 
 
 #include <stdint.h>
-#include "common.hh"
+#include "axlib/core/core.h"
 #include "fontlibrary.h"
 
 static uint8_t const PROGMEM vcr_Bitmaps[3420] =

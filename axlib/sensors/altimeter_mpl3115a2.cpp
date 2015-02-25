@@ -1,6 +1,6 @@
 #include "axlib/sensors/altimeter_mpl3115a2.hh"
 #include <LUFA/Drivers/Peripheral/TWI.h>
-#include "common.hh"
+#include "axlib/core/core.hh"
 
 using namespace axlib;
 

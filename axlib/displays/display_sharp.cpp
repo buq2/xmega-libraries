@@ -1,7 +1,7 @@
 #include "axlib/displays/display_sharp.hh"
 #include <LUFA/Drivers/Peripheral/SPI.h>
 #include <util/delay.h>
-#include "common.hh"
+#include "axlib/core/core.hh"
 
 using namespace axlib;
 

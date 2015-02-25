@@ -1,7 +1,13 @@
 #ifndef AXLIB_CORE_CORE_HH
 #define AXLIB_CORE_CORE_HH
 
+#include "axlib/core/core.h"
+
 namespace axlib {
+
+#include <stdint.h>
+
+extern uint8_t BitFlip(uint8_t n);
 
 template<class T>
 T min(const T a, const T b)

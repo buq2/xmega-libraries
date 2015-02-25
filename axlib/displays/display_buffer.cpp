@@ -1,6 +1,6 @@
 #include "axlib/displays/display_buffer.hh"
 #include <string.h>
-#include "common.hh"
+#include "axlib/core/core.hh"
 
 using namespace axlib;
 

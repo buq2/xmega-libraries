@@ -33,6 +33,6 @@ class PidController
 
 } //namespace axlib
 
-#include "control/pid_controller.hpp"
+#include "axlib/control/pid_controller.hpp"
 
 #endif //ifndef AXLIB_CONTROL_PIX_HH
