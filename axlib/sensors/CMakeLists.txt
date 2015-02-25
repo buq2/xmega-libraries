@@ -4,3 +4,6 @@ ADD_LIBRARY(axSensors
     gps_sim33ela.hh gps_sim33ela.cpp
     thermo_max6675.hh thermo_max6675.cpp
     )
+
+TARGET_LINK_LIBRARIES(axSensors
+    lufa)
