@@ -9,6 +9,14 @@ namespace axlib {
 class DisplayBuffer
 {
  public:
+    typedef enum
+    {
+        ROTATION_NONE,
+        ROTATION_90,
+        ROTATION_180,
+        ROTATION_270
+    } Rotation;
+
     DisplayBuffer(const uint8_t width, const uint8_t height);
     ~DisplayBuffer();
 
@@ -42,6 +50,7 @@ class DisplayBuffer
     uint8_t height_;
     uint8_t stride_;
     uint8_t data_[128*128/8];
+    Rotation rotation_;
 }; //class DisplayBuffer
 
 } //namespace axlib

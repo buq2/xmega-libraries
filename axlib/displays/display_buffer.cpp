@@ -11,7 +11,8 @@ DisplayBuffer::DisplayBuffer(const uint8_t width, const uint8_t height)
     :
       width_(width),
       height_(height),
-      stride_(width_/8)
+      stride_(width_/8),
+      rotation_(ROTATION_NONE)
 {
     Clear();
 }
@@ -129,11 +130,34 @@ void DisplayBuffer::ModifyPixel(const uint8_t x, const uint8_t y, const PixelMan
 #endif
 }
 
-void DisplayBuffer::ModifyBit(const uint8_t x, const uint8_t y, const DisplayBuffer::PixelManipulate op)
+void DisplayBuffer::ModifyBit(const uint8_t x_in, const uint8_t y_in, const DisplayBuffer::PixelManipulate op)
 {
+    // Apply rotation
+    uint8_t x,y;
+    switch(rotation_) {
+    case ROTATION_NONE:
+    default:
+        x = x_in;
+        y = y_in;
+        break;
+    case ROTATION_90:
+        x = y_in;
+        y = height_-x_in;
+        break;
+    case ROTATION_180:
+        x = width_-x_in;
+        y = height_-y_in;
+        break;
+    case ROTATION_270:
+        x = height_-y_in;
+        y = x_in;
+        break;
+    }
+
     if (x >= width_ || y >= height_) {
         return;
     }
+
     uint8_t *row_ptr = &data_[y*stride_];
     uint8_t *byte_ptr = &row_ptr[x/8];
     uint8_t data = *byte_ptr;
