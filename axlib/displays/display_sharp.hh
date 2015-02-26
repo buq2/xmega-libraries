@@ -23,8 +23,19 @@ class DisplaySharp
  private:
     void SetChipSelected(const uint8_t val);
     void SendByte(const uint8_t val);
+
+    /// This method will wait for the byte to be sent until
+    /// the byte is sent, or we are no longer in master mode
+    /// This function was created because SS pin was used as a
+    /// button which pulled the SS pin to low when pressed.
+    /// This causes SPI to become slave if SS pin is in input mode
+    /// -> byte would never be sent and we would get stuck in
+    /// normal mode.
+    /// Will be called if reset_master_mode_automatically_ is true
+    void SendByteMasterCheck(const uint8_t val);
     uint8_t GetVbyte();
     void SendVbyte();
+    void CheckSpiMasterMode();
  private:
     uint8_t width_;
     uint8_t height_;
@@ -42,6 +53,11 @@ class DisplaySharp
     // Vbit is used to change the polarity
     // it is embedded in every command
     bool vbit_;
+
+    // If true, master spi mode is automatically reset
+    // if it "slips" into slave mode. Also changes how bytes
+    // are sent
+    bool reset_master_mode_automatically_;
 }; //class DisplaySharp
 
 } //namespace axlib

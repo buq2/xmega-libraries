@@ -25,7 +25,8 @@ DisplaySharp::DisplaySharp(const uint8_t width, const uint8_t height,
       excomin_pin_(excomin_pin),
       display_on_port_(GetPort(display_on_port)),
       display_on_pin_(display_on_pin),
-      vbit_(false)
+      vbit_(false),
+      reset_master_mode_automatically_(true)
 {
 
 }
@@ -33,10 +34,15 @@ DisplaySharp::DisplaySharp(const uint8_t width, const uint8_t height,
 bool DisplaySharp::Setup()
 {
     // Setup SPI pins
-    spi_port_->DIRSET  = SPI_MOSI_PIN | SPI_SCK_PIN | SPI_SS_PIN;
-    spi_port_->PIN4CTRL = PORT_OPC_WIREDANDPULL_gc;
+    spi_port_->DIRSET  = SPI_MOSI_PIN | SPI_SCK_PIN;
+    // We do not use ss pin
+    // SPI_SS_PIN
+    // spi_port_->PIN4CTRL = PORT_OPC_WIREDANDPULL_gc;
 
     SetChipSelected(0);
+
+    // Disable SPI interrupts (we are polling)
+    spi_->INTCTRL = 0;
 
     // Set the actual CS pin (which is not in the SPI port)
     cs_port_->DIRSET = cs_pin_;
@@ -67,7 +73,7 @@ void DisplaySharp::SetContent(const DisplayBuffer &buffer)
     }
 
     SetChipSelected(1);
-    _delay_us(6);
+    CheckSpiMasterMode();
 
     SendByte(0b10000000 | GetVbyte()); //Write line command
     for (uint8_t y = 0; y < height_; ++y) {
@@ -92,13 +98,12 @@ void DisplaySharp::SetContent(const DisplayBuffer &buffer)
 
 void DisplaySharp::ToggleExtcomin()
 {
-    static uint8_t comstatus = 0;
     if (!vbit_) {
         vbit_ = true;
         if (NULL != excomin_port_) {
             excomin_port_->OUTSET = excomin_pin_;
         } else {
-            //zSendVbyte();
+            SendVbyte();
         }
     } else {
         vbit_ = false;
@@ -113,7 +118,7 @@ void DisplaySharp::ToggleExtcomin()
 void DisplaySharp::Clear()
 {
     SetChipSelected(1);
-    _delay_us(6);
+    CheckSpiMasterMode();
 
     SendByte(0b00000100 | GetVbyte());
     SendByte(0);
@@ -140,12 +145,23 @@ void DisplaySharp::SetChipSelected(const uint8_t val)
         cs_port_->OUTCLR = cs_pin_;
     } else {
         cs_port_->OUTSET = cs_pin_;
+        _delay_us(6);
     }
 }
 
 void DisplaySharp::SendByte(const uint8_t val)
 {
-    SPI_SendByte(spi_, val);
+    if (reset_master_mode_automatically_) {
+        SendByteMasterCheck(val);
+    } else {
+        SPI_SendByte(spi_, val);
+    }
+}
+
+void DisplaySharp::SendByteMasterCheck(const uint8_t val)
+{
+    spi_->DATA = val;
+    while (!(spi_->STATUS & SPI_IF_bm) && (spi_->CTRL & SPI_MASTER_bm));
 }
 
 uint8_t DisplaySharp::GetVbyte()
@@ -157,7 +173,19 @@ uint8_t DisplaySharp::GetVbyte()
 void DisplaySharp::SendVbyte()
 {
     SetChipSelected(true);
+    CheckSpiMasterMode();
     SendByte(GetVbyte());
     SendByte(0); // Padding
     SetChipSelected(false);
+}
+
+void DisplaySharp::CheckSpiMasterMode()
+{
+    if (!reset_master_mode_automatically_) {
+        return;
+    }
+    if ((SPI_GetCurrentMode(spi_) & SPI_MODE_MASTER) == 0) {
+        // In slave mode. Reset
+        spi_->CTRL |= SPI_MODE_MASTER;
+    }
 }
