@@ -11,10 +11,11 @@ class DisplayBuffer
  public:
     typedef enum
     {
-        ROTATION_NONE,
-        ROTATION_90,
-        ROTATION_180,
-        ROTATION_270
+        ROTATION_NONE = 0,
+        ROTATION_90 = 1,
+        ROTATION_180 = 2,
+        ROTATION_270 = 3,
+        ROTATION_NUM_ENUMS = 4
     } Rotation;
 
     DisplayBuffer(const uint8_t width, const uint8_t height);
@@ -45,6 +46,7 @@ class DisplayBuffer
     void BlitRow(const uint8_t x, const uint8_t y, const uint8_t *data, const uint8_t width_bits);
     void BlitRow(const uint8_t x, const uint8_t y, const uint8_t scale_x, const uint8_t *data, const uint8_t width_bits);
     void Clear();
+    void SetRotation(const Rotation rot);
  private:
     uint8_t width_;
     uint8_t height_;

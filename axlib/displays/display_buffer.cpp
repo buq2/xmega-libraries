@@ -237,3 +237,8 @@ void DisplayBuffer::Clear()
 {
     memset(data_,0,GetNumberOfBytes());
 }
+
+void DisplayBuffer::SetRotation(const DisplayBuffer::Rotation rot)
+{
+    rotation_ = rot;
+}
