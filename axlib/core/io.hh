@@ -16,12 +16,25 @@ typedef enum Port_t
     PORT_R,
 } Port;
 
+typedef enum Pin_t
+{
+    PIN_0 = 1,
+    PIN_1 = 1<<1,
+    PIN_2 = 1<<2,
+    PIN_3 = 1<<3,
+    PIN_4 = 1<<4,
+    PIN_5 = 1<<5,
+    PIN_6 = 1<<6,
+    PIN_7 = 1<<7
+} Pin;
+
 PORT_t *GetPort(const Port port);
 SPI_t *GetSpiPort(const Port port);
 TWI_t *GetI2CPort(const Port port);
 TC0_t *GetTimerCounter0(const Port port);
 TC1_t *GetTimerCounter1(const Port port);
 TC2_t *GetTimerCounter2(const Port port);
+register8_t *GetPortPinControlRegister(const Port port, const Pin pin);
 
 } //namespace axlib
 

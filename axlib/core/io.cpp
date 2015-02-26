@@ -17,6 +17,8 @@ PORT_t *GetPort(const Port port)
         return &PORTE;
     case PORT_R:
         return &PORTR;
+    default:
+        return 0;
     }
     return 0;
 }
@@ -86,6 +88,34 @@ TWI_t *GetI2CPort(const Port port)
         return 0;
     }
     return 0;
+}
+
+register8_t *GetPortPinControlRegister(const Port port, const Pin pin)
+{
+    PORT_t *p = GetPort(port);
+    if (0 == p) {
+        return 0;
+    }
+    switch(pin) {
+    case PIN_0:
+        return &p->PIN0CTRL;
+    case PIN_1:
+        return &p->PIN1CTRL;
+    case PIN_2:
+        return &p->PIN2CTRL;
+    case PIN_3:
+        return &p->PIN3CTRL;
+    case PIN_4:
+        return &p->PIN4CTRL;
+    case PIN_5:
+        return &p->PIN5CTRL;
+    case PIN_6:
+        return &p->PIN6CTRL;
+    case PIN_7:
+        return &p->PIN7CTRL;
+    default:
+        return 0;
+    }
 }
 
 } //namespace axlib
