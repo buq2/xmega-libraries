@@ -54,7 +54,7 @@ bool DisplaySharp::Setup()
     // Setup SPI
     // It seems that even SPI_SPEED_FCPU_DIV_4  could be usable
     SPI_Init(spi_,
-             SPI_SPEED_FCPU_DIV_128  | SPI_ORDER_MSB_FIRST | SPI_SCK_LEAD_RISING |
+             SPI_SPEED_FCPU_DIV_8  | SPI_ORDER_MSB_FIRST | SPI_SCK_LEAD_RISING |
              SPI_SAMPLE_TRAILING | SPI_MODE_MASTER);
 
     // Setup VCOM signal

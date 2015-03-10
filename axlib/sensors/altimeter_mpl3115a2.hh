@@ -50,10 +50,10 @@ class AltimeterMPl3114A2
 
     /// Zeros altitude (will not fail but can get stuck)
     void ZeroAltitudeLoop();
- private:
+
     /// Gets current altitude and sets it as a reference point
     uint8_t ZeroAltitude();
-
+ private:
     /// Altitude without zeroing
     uint8_t GetRawAltitudeMeters(float *altitude);
  private:
