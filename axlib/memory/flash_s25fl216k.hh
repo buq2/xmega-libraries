@@ -2,6 +2,7 @@
 #define AXLIB_MEMORY_FLASH_S25FL216K_HH
 
 #include "axlib/core/io.hh"
+#include <stdint.h>
 
 namespace axlib {
 
@@ -12,9 +13,22 @@ class FlashS25Fl216K
                    const Port cs_port,
                    const Pin cs_pin);
 
-    void ReadData(const uint8_t num_bytes, void *read_address, void *data);
+    void ReadData(uint8_t *data, uint32_t read_address, const uint32_t num_bytes);
+
+    /// Write data to flash. Can write more than 256 bytes safely
+    /// \note The pages which are written must have been erased before the write
+    void WriteData(uint32_t write_address, uint8_t *data, const uint32_t num_bytes);
+    void Erase4k(uint32_t write_address);
+    uint8_t ReadStatus();
+    void WritePage256(uint32_t write_address, uint8_t *data, const uint8_t num_bytes);
  private:
+    void WriteEnable();
     void SetChipSelected(const bool selected);
+    void InitSpi();
+    void WaitUntilReady();
+    static uint32_t GetNext256Page(uint32_t address);
+    static uint32_t GetPage256Begin(uint32_t address);
+
  private:
     SPI_t *spi_;
     PORT_t *spi_port_;

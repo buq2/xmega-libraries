@@ -36,6 +36,7 @@ class DisplaySharp
     uint8_t GetVbyte();
     void SendVbyte();
     void CheckSpiMasterMode();
+    void InitSpi();
  private:
     uint8_t width_;
     uint8_t height_;

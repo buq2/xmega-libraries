@@ -52,10 +52,7 @@ bool DisplaySharp::Setup()
     display_on_port_->DIRSET = display_on_pin_;
 
     // Setup SPI
-    // It seems that even SPI_SPEED_FCPU_DIV_4  could be usable
-    SPI_Init(spi_,
-             SPI_SPEED_FCPU_DIV_8  | SPI_ORDER_MSB_FIRST | SPI_SCK_LEAD_RISING |
-             SPI_SAMPLE_TRAILING | SPI_MODE_MASTER);
+    InitSpi();
 
     // Setup VCOM signal
     if (NULL != excomin_port_) {
@@ -144,6 +141,7 @@ void DisplaySharp::SetChipSelected(const uint8_t val)
     if (val == 0) {
         cs_port_->OUTCLR = cs_pin_;
     } else {
+        InitSpi();
         cs_port_->OUTSET = cs_pin_;
         _delay_us(6);
     }
@@ -188,4 +186,12 @@ void DisplaySharp::CheckSpiMasterMode()
         // In slave mode. Reset
         spi_->CTRL |= SPI_MODE_MASTER;
     }
+}
+
+void DisplaySharp::InitSpi()
+{
+    // It seems that even SPI_SPEED_FCPU_DIV_4  could be usable
+    SPI_Init(spi_,
+             SPI_SPEED_FCPU_DIV_8  | SPI_ORDER_MSB_FIRST | SPI_SCK_LEAD_RISING |
+             SPI_SAMPLE_TRAILING | SPI_MODE_MASTER);
 }
