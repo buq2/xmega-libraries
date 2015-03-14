@@ -118,19 +118,7 @@ uint8_t DisplayBuffer::CalculateTextHeightPixels(const fontStyle_t &font, const 
     return CalculateTextHeightPixels(font, scale_y, str);
 }
 
-void DisplayBuffer::ModifyPixel(const uint8_t x, const uint8_t y, const PixelManipulate op)
-{
-#ifdef USE_MCU
-    // Flip bit position
-    ModifyBit(x-(x%8)*2+7,y,op);
-    // Same as
-    //ModifyBit((x/8)*8-x%8+7,y,op);
-#else
-    ModifyBit(x,y,op);
-#endif
-}
-
-void DisplayBuffer::ModifyBit(const uint8_t x_in, const uint8_t y_in, const DisplayBuffer::PixelManipulate op)
+void DisplayBuffer::ModifyPixel(const uint8_t x_in, const uint8_t y_in, const PixelManipulate op)
 {
     // Apply rotation
     uint8_t x,y;
@@ -154,6 +142,18 @@ void DisplayBuffer::ModifyBit(const uint8_t x_in, const uint8_t y_in, const Disp
         break;
     }
 
+#ifdef USE_MCU
+    // Flip bit position
+    ModifyBit(x-(x%8)*2+7,y,op);
+    // Same as
+    //ModifyBit((x/8)*8-x%8+7,y,op);
+#else
+    ModifyBit(x,y,op);
+#endif
+}
+
+void DisplayBuffer::ModifyBit(const uint8_t x, const uint8_t y, const DisplayBuffer::PixelManipulate op)
+{
     if (x >= width_ || y >= height_) {
         return;
     }
