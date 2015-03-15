@@ -70,7 +70,6 @@ void DisplaySharp::SetContent(const DisplayBuffer &buffer)
     }
 
     SetChipSelected(1);
-    CheckSpiMasterMode();
 
     SendByte(0b10000000 | GetVbyte()); //Write line command
     for (uint8_t y = 0; y < height_; ++y) {
@@ -115,7 +114,6 @@ void DisplaySharp::ToggleExtcomin()
 void DisplaySharp::Clear()
 {
     SetChipSelected(1);
-    CheckSpiMasterMode();
 
     SendByte(0b00000100 | GetVbyte());
     SendByte(0);
@@ -150,16 +148,10 @@ void DisplaySharp::SetChipSelected(const uint8_t val)
 void DisplaySharp::SendByte(const uint8_t val)
 {
     if (reset_master_mode_automatically_) {
-        SendByteMasterCheck(val);
+        SPI_SendByte_MasterCheck(spi_,val);
     } else {
         SPI_SendByte(spi_, val);
     }
-}
-
-void DisplaySharp::SendByteMasterCheck(const uint8_t val)
-{
-    spi_->DATA = val;
-    while (!(spi_->STATUS & SPI_IF_bm) && (spi_->CTRL & SPI_MASTER_bm));
 }
 
 uint8_t DisplaySharp::GetVbyte()
@@ -171,21 +163,9 @@ uint8_t DisplaySharp::GetVbyte()
 void DisplaySharp::SendVbyte()
 {
     SetChipSelected(true);
-    CheckSpiMasterMode();
     SendByte(GetVbyte());
     SendByte(0); // Padding
     SetChipSelected(false);
-}
-
-void DisplaySharp::CheckSpiMasterMode()
-{
-    if (!reset_master_mode_automatically_) {
-        return;
-    }
-    if ((SPI_GetCurrentMode(spi_) & SPI_MODE_MASTER) == 0) {
-        // In slave mode. Reset
-        spi_->CTRL |= SPI_MODE_MASTER;
-    }
 }
 
 void DisplaySharp::InitSpi()

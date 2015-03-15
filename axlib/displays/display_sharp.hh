@@ -24,18 +24,8 @@ class DisplaySharp
     void SetChipSelected(const uint8_t val);
     void SendByte(const uint8_t val);
 
-    /// This method will wait for the byte to be sent until
-    /// the byte is sent, or we are no longer in master mode
-    /// This function was created because SS pin was used as a
-    /// button which pulled the SS pin to low when pressed.
-    /// This causes SPI to become slave if SS pin is in input mode
-    /// -> byte would never be sent and we would get stuck in
-    /// normal mode.
-    /// Will be called if reset_master_mode_automatically_ is true
-    void SendByteMasterCheck(const uint8_t val);
     uint8_t GetVbyte();
     void SendVbyte();
-    void CheckSpiMasterMode();
     void InitSpi();
  private:
     uint8_t width_;

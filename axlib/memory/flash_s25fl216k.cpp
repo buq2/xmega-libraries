@@ -29,26 +29,36 @@ FlashS25Fl216K::FlashS25Fl216K(const Port spi_port, const Port cs_port, const Pi
 void FlashS25Fl216K::WriteEnable()
 {
     SetChipSelected(true);
-    SPI_SendByte(spi_, 0x06);
+    SendByte(0x06);
     SetChipSelected(false);
 }
 
 void FlashS25Fl216K::Erase4k(uint32_t write_address)
 {
+    WaitUntilReady();
     WriteEnable();
     SetChipSelected(true);
-    SPI_SendByte(spi_,0x20);
-    SPI_SendByte(spi_, (write_address>>8*2) & 0xFF);
-    SPI_SendByte(spi_, (write_address>>8*1) & 0xFF);
-    SPI_SendByte(spi_, (write_address>>8*0) & 0xFF);
+    SendByte(0x20);
+    SendByte((write_address>>8*2) & 0xFF);
+    SendByte((write_address>>8*1) & 0xFF);
+    SendByte((write_address>>8*0) & 0xFF);
+    SetChipSelected(false);
+}
+
+void FlashS25Fl216K::FullErase()
+{
+    WaitUntilReady();
+    WriteEnable();
+    SetChipSelected(true);
+    SendByte(0xc7);
     SetChipSelected(false);
 }
 
 uint8_t FlashS25Fl216K::ReadStatus()
 {
     SetChipSelected(true);
-    SPI_SendByte(spi_, 0x05);
-    const uint8_t status = SPI_ReceiveByte(spi_);
+    SendByte(0x05);
+    const uint8_t status = SPI_ReceiveByte_MasterCheck(spi_);
     SetChipSelected(false);
     return status;
 }
@@ -70,6 +80,16 @@ void FlashS25Fl216K::InitSpi()
              SPI_SAMPLE_LEADING | SPI_MODE_MASTER);
 }
 
+void FlashS25Fl216K::SendByte(const uint8_t byte)
+{
+    SPI_SendByte_MasterCheck(spi_, byte);
+}
+
+uint8_t FlashS25Fl216K::ReceiveByte()
+{
+    return SPI_ReceiveByte_MasterCheck(spi_);
+}
+
 void FlashS25Fl216K::WaitUntilReady()
 {
     while (ReadStatus() & 0b00000001) {
@@ -79,6 +99,12 @@ void FlashS25Fl216K::WaitUntilReady()
 uint32_t FlashS25Fl216K::GetNext256Page(uint32_t address)
 {
     return (address & 0xffff00) + 0x000100;
+}
+
+uint32_t FlashS25Fl216K::GetNext4kSector(uint32_t address)
+{
+    uint32_t next = GetSector4kBegin(address);
+    return next+4096;
 }
 
 uint32_t FlashS25Fl216K::GetPage256Begin(uint32_t address)
@@ -96,22 +122,23 @@ void FlashS25Fl216K::ReadData(uint8_t *data, uint32_t read_address, const uint32
 {
     WaitUntilReady();
     SetChipSelected(true);
-    SPI_SendByte(spi_, 0x03);
+    SendByte(0x03);
 
     // Send read address
-    SPI_SendByte(spi_, (read_address>>8*2) & 0xFF);
-    SPI_SendByte(spi_, (read_address>>8*1) & 0xFF);
-    SPI_SendByte(spi_, (read_address>>8*0) & 0xFF);
+    SendByte((read_address>>8*2) & 0xFF);
+    SendByte((read_address>>8*1) & 0xFF);
+    SendByte((read_address>>8*0) & 0xFF);
 
     for (unsigned int i = 0; i < num_bytes; ++i) {
-        data[i] = SPI_ReceiveByte(spi_);
+        data[i] = ReceiveByte();
     }
 
     SetChipSelected(false);
 }
 
-void FlashS25Fl216K::WriteData(uint32_t write_address, uint8_t *data, const uint32_t num_bytes)
+void FlashS25Fl216K::WriteData(uint32_t write_address, const uint8_t *data_in, const uint32_t num_bytes)
 {
+    uint8_t *data = const_cast<uint8_t*>(data_in);
     uint32_t bytes_left = num_bytes;
     uint32_t address = write_address;
     while(bytes_left) {
@@ -127,19 +154,18 @@ void FlashS25Fl216K::WriteData(uint32_t write_address, uint8_t *data, const uint
 
 void FlashS25Fl216K::WritePage256(uint32_t write_address, uint8_t *data, const uint8_t num_bytes)
 {
-    Erase4k(0);
     WaitUntilReady();
     WriteEnable();
     SetChipSelected(true);
-    SPI_SendByte(spi_, 0x02);
+    SendByte(0x02);
 
     // Send write address
-    SPI_SendByte(spi_, (write_address>>8*2) & 0xFF);
-    SPI_SendByte(spi_, (write_address>>8*1) & 0xFF);
-    SPI_SendByte(spi_, (write_address>>8*0) & 0xFF);
+    SendByte((write_address>>8*2) & 0xFF);
+    SendByte((write_address>>8*1) & 0xFF);
+    SendByte((write_address>>8*0) & 0xFF);
 
     for (unsigned int i = 0; i < num_bytes; ++i) {
-        SPI_SendByte(spi_, data[i]);
+        SendByte(data[i]);
     }
 
     SetChipSelected(false);

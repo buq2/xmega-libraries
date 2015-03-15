@@ -17,20 +17,23 @@ class FlashS25Fl216K
 
     /// Write data to flash. Can write more than 256 bytes safely
     /// \note The pages which are written must have been erased before the write
-    void WriteData(uint32_t write_address, uint8_t *data, const uint32_t num_bytes);
+    void WriteData(uint32_t write_address, const uint8_t *data, const uint32_t num_bytes);
     void Erase4k(uint32_t write_address);
     uint8_t ReadStatus();
     void WritePage256(uint32_t write_address, uint8_t *data, const uint8_t num_bytes);
     static uint32_t GetNext256Page(uint32_t address);
+    static uint32_t GetNext4kSector(uint32_t address);
     static uint32_t GetPage256Begin(uint32_t address);
     static uint32_t GetSector4kBegin(uint32_t address);
+    uint32_t GetSectorLength();
+    void WaitUntilReady();
+    void FullErase();
  private:
     void WriteEnable();
     void SetChipSelected(const bool selected);
     void InitSpi();
-    void WaitUntilReady();
-
-
+    void SendByte(const uint8_t byte);
+    uint8_t ReceiveByte();
  private:
     SPI_t *spi_;
     PORT_t *spi_port_;

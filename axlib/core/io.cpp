@@ -118,4 +118,25 @@ register8_t *GetPortPinControlRegister(const Port port, const Pin pin)
     }
 }
 
+void SPI_SendByte_MasterCheck(SPI_t * const spi, const uint8_t val)
+{
+    spi->DATA = val;
+    while (!(spi->STATUS & SPI_IF_bm) && (spi->CTRL & SPI_MASTER_bm));
+}
+
+uint8_t SPI_ReceiveByte_MasterCheck(SPI_t * const spi)
+{
+    spi->DATA = 0;
+    while (!(spi->STATUS & SPI_IF_bm) && (spi->CTRL & SPI_MASTER_bm));
+    return spi->DATA;
+}
+
+void SPI_CheckMasterMode(SPI_t *spi)
+{
+    if (!(spi->CTRL & SPI_MASTER_bm)) {
+        // In slave mode. Reset
+        spi->CTRL |= SPI_MASTER_bm;
+    }
+}
+
 } //namespace axlib

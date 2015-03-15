@@ -36,6 +36,18 @@ TC1_t *GetTimerCounter1(const Port port);
 TC2_t *GetTimerCounter2(const Port port);
 register8_t *GetPortPinControlRegister(const Port port, const Pin pin);
 
+/// This method will wait for the byte to be sent until
+/// the byte is sent, or we are no longer in master mode
+/// This function was created because SS pin was used as a
+/// button which pulled the SS pin to low when pressed.
+/// This causes SPI to become slave if SS pin is in input mode
+/// -> byte would never be sent and we would get stuck in
+/// normal mode.
+/// Will be called if reset_master_mode_automatically_ is true
+void SPI_SendByte_MasterCheck(SPI_t* const spi, const uint8_t val);
+uint8_t SPI_ReceiveByte_MasterCheck(SPI_t* const spi);
+void SPI_CheckMasterMode(SPI_t *spi);
+
 } //namespace axlib
 
 #endif //ifndef AXLIB_CORE_PORT_HH
