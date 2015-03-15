@@ -66,7 +66,7 @@ void FlashS25Fl216K::SetChipSelected(const bool selected)
 void FlashS25Fl216K::InitSpi()
 {
     SPI_Init(spi_,
-             SPI_SPEED_FCPU_DIV_32  | SPI_ORDER_MSB_FIRST | SPI_SCK_LEAD_RISING |
+             SPI_SPEED_FCPU_DIV_2  | SPI_ORDER_MSB_FIRST | SPI_SCK_LEAD_RISING |
              SPI_SAMPLE_LEADING | SPI_MODE_MASTER);
 }
 
@@ -86,8 +86,13 @@ uint32_t FlashS25Fl216K::GetPage256Begin(uint32_t address)
     return address & 0xffff00;
 }
 
+uint32_t FlashS25Fl216K::GetSector4kBegin(uint32_t address)
+{
+    return address & 0xfff000;
+}
 
-void axlib::FlashS25Fl216K::ReadData(uint8_t *data, uint32_t read_address, const uint32_t num_bytes)
+
+void FlashS25Fl216K::ReadData(uint8_t *data, uint32_t read_address, const uint32_t num_bytes)
 {
     WaitUntilReady();
     SetChipSelected(true);
