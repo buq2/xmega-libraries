@@ -26,7 +26,7 @@ DisplaySharp::DisplaySharp(const uint8_t width, const uint8_t height,
       display_on_port_(GetPort(display_on_port)),
       display_on_pin_(display_on_pin),
       vbit_(false),
-      reset_master_mode_automatically_(true)
+      reset_master_mode_automatically_(false)
 {
 
 }
@@ -35,9 +35,10 @@ bool DisplaySharp::Setup()
 {
     // Setup SPI pins
     spi_port_->DIRSET  = SPI_MOSI_PIN | SPI_SCK_PIN;
+    spi_port_->DIRSET = SPI_SS_PIN; // Set to output pin, even tough SS is not used
     // We do not use ss pin
     // SPI_SS_PIN
-    // spi_port_->PIN4CTRL = PORT_OPC_WIREDANDPULL_gc;
+    spi_port_->PIN4CTRL = PORT_OPC_WIREDANDPULL_gc;
 
     SetChipSelected(0);
 
