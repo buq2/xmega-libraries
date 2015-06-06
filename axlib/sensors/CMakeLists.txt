@@ -4,6 +4,7 @@ ADD_LIBRARY(axSensors
     gps_sim33ela.hh gps_sim33ela.cpp
     thermo_max6675.hh thermo_max6675.cpp
     clock_mcp7940m.hh clock_mcp7940m.cpp
+    digipot_mcp4017t.hh digipot_mcp4017t.cpp
     )
 
 TARGET_LINK_LIBRARIES(axSensors
