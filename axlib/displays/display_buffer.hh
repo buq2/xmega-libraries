@@ -47,12 +47,14 @@ class DisplayBuffer
     void BlitRow(const uint8_t x, const uint8_t y, const uint8_t scale_x, const uint8_t *data, const uint8_t width_bits);
     void Clear();
     void SetRotation(const Rotation rot);
+    void SetInvertColors(const bool invert);
  private:
     uint8_t width_;
     uint8_t height_;
     uint8_t stride_;
     uint8_t data_[128*128/8];
     Rotation rotation_;
+    bool invert_colors_;
 }; //class DisplayBuffer
 
 } //namespace axlib

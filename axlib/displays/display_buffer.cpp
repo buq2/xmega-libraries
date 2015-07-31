@@ -12,7 +12,8 @@ DisplayBuffer::DisplayBuffer(const uint8_t width, const uint8_t height)
       width_(width),
       height_(height),
       stride_(width_/8),
-      rotation_(ROTATION_NONE)
+      rotation_(ROTATION_NONE),
+      invert_colors_(false)
 {
     Clear();
 }
@@ -152,10 +153,22 @@ void DisplayBuffer::ModifyPixel(const uint8_t x_in, const uint8_t y_in, const Pi
 #endif
 }
 
-void DisplayBuffer::ModifyBit(const uint8_t x, const uint8_t y, const DisplayBuffer::PixelManipulate op)
+void DisplayBuffer::ModifyBit(const uint8_t x, const uint8_t y, const DisplayBuffer::PixelManipulate op_in)
 {
     if (x >= width_ || y >= height_) {
         return;
+    }
+
+    DisplayBuffer::PixelManipulate op = op_in;
+    if (invert_colors_) {
+        switch(op_in) {
+        case PIXEL_SET:
+            op = PIXEL_CLEAR;
+            break;
+        case PIXEL_CLEAR:
+            op = PIXEL_SET;
+            break;
+        }
     }
 
     uint8_t *row_ptr = &data_[y*stride_];
@@ -235,10 +248,19 @@ void DisplayBuffer::BlitRow(const uint8_t x, const uint8_t y, const uint8_t scal
 
 void DisplayBuffer::Clear()
 {
-    memset(data_,0,GetNumberOfBytes());
+    if (!invert_colors_) {
+        memset(data_,0,GetNumberOfBytes());
+    } else {
+        memset(data_,255,GetNumberOfBytes());
+    }
 }
 
 void DisplayBuffer::SetRotation(const DisplayBuffer::Rotation rot)
 {
     rotation_ = rot;
+}
+
+void DisplayBuffer::SetInvertColors(const bool invert)
+{
+    invert_colors_ = invert;
 }
