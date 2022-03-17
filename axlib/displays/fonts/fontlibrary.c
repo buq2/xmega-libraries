@@ -1926,7 +1926,7 @@ static uint8_t const PROGMEM vcr_Widths[95] =
     10,  9,  9,  6,  2,  6, 10, 
 };
 
-fontStyle_t FontStyle_vcr = 
+static fontStyle_t FontStyle_vcr = 
 {
     95, // Glyph count
     32, // First ascii code
@@ -5471,7 +5471,7 @@ static uint8_t const PROGMEM vcr_big_Widths[95] =
     21, 21, 21, 12,  4, 12, 21, 
 };
 
-fontStyle_t FontStyle_vcr_big = 
+static fontStyle_t FontStyle_vcr_big = 
 {
     95, // Glyph count
     32, // First ascii code
@@ -6546,7 +6546,7 @@ static uint8_t const PROGMEM vcr_tiny_Widths[95] =
      6,  5,  5,  3,  1,  3,  6, 
 };
 
-fontStyle_t FontStyle_vcr_tiny = 
+static fontStyle_t FontStyle_vcr_tiny = 
 {
     95, // Glyph count
     32, // First ascii code
@@ -10091,7 +10091,7 @@ static uint8_t const PROGMEM impact_huge_Widths[95] =
     17, 18, 14, 13,  4, 13, 19, 
 };
 
-fontStyle_t FontStyle_impact_huge = 
+static fontStyle_t FontStyle_impact_huge = 
 {
     95, // Glyph count
     32, // First ascii code
@@ -11736,7 +11736,7 @@ static uint8_t const PROGMEM impact_Widths[95] =
      5,  7,  5,  6,  1,  6,  8, 
 };
 
-fontStyle_t FontStyle_impact = 
+static fontStyle_t FontStyle_impact = 
 {
     95, // Glyph count
     32, // First ascii code

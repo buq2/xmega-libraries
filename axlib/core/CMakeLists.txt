@@ -9,6 +9,6 @@ IF (USE_MCU)
         )
 ENDIF()
 
-ADD_LIBRARY(axCore
+ADD_LIBRARY(axCore STATIC
     ${CORE_FILES}
     )

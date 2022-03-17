@@ -20,10 +20,10 @@ typedef struct
 } fontStyle_t;
 
 
-extern fontStyle_t FontStyle_vcr;
-extern fontStyle_t FontStyle_vcr_big;
-extern fontStyle_t FontStyle_vcr_tiny;
-extern fontStyle_t FontStyle_impact_huge;
-extern fontStyle_t FontStyle_impact;
+static fontStyle_t FontStyle_vcr;
+static fontStyle_t FontStyle_vcr_big;
+static fontStyle_t FontStyle_vcr_tiny;
+static fontStyle_t FontStyle_impact_huge;
+static fontStyle_t FontStyle_impact;
 
 #endif /* FONTLIBRARY_H_ */

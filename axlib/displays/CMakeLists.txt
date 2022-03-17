@@ -9,7 +9,7 @@ IF (USE_MCU)
         )
 ENDIF()
 
-ADD_LIBRARY(axDisplays
+ADD_LIBRARY(axDisplays STATIC
     ${DISPLAY_FILES}
     )
 
